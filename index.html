@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>DEAD LINE</title>
+<style>
+:root{--bg:#0a0708;--blood:#a3101f;--lcd:#b9c27a;--lcdd:#1b1f0c;--bone:#d9cfc0}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bg);color:var(--bone);font:16px "Courier New",monospace;min-height:100vh}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;z-index:50;background:repeating-linear-gradient(0deg,#0000 0 2px,#0007 3px);animation:fl 5s infinite}
+@keyframes fl{0%,90%,100%{opacity:1}92%{opacity:.3}94%{opacity:.9}96%{opacity:.2}}
+.screen{display:none;max-width:460px;margin:auto;padding:14px 14px 40px}.screen.on{display:block}
+h1{color:var(--blood);text-align:center;letter-spacing:6px;font-size:34px;margin:18px 0 6px;text-shadow:2px 0 #0ff4,-2px 0 #f004,0 0 14px var(--blood)}
+h2{color:var(--blood);margin:6px 0}
+p.sm{font-size:13px;opacity:.75;margin:6px 0}
+button,input,select{font:inherit;color:inherit}
+button{background:#1c0d10;border:1px solid #5a2229;padding:12px;border-radius:4px;cursor:pointer}
+button:active{background:#3a1117}
+button.pri{background:var(--blood);border-color:#e44;color:#fff;width:100%;font-size:18px;margin:8px 0}
+input,select{background:#120c0d;border:1px solid #4a2a2d;padding:11px;border-radius:4px;width:100%}
+.row{display:flex;gap:8px;margin:8px 0}.row>*{flex:1}
+.warn{border:2px solid var(--blood);padding:14px;margin:16px 0;background:#1a0708}
+.plist div{display:flex;justify-content:space-between;padding:8px;border-bottom:1px solid #3a1a1d}
+/* phone body: grimy, cracked */
+.phone{border-radius:18px;padding:12px;margin:10px 0;border:2px solid #2a2326;position:relative;
+ background:radial-gradient(circle at 30% 10%,#2c2724,#0d0b0b 70%);box-shadow:inset 0 0 40px #000,0 0 30px #a3101f33}
+.phone:after{content:"";position:absolute;inset:0;pointer-events:none;border-radius:18px;
+ background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath d='M72 0L62 22 70 30 55 55 60 62 40 100M62 22L88 35M55 55L30 48M60 62L82 80' stroke='%23fff' stroke-opacity='.22' fill='none' stroke-width='.4'/%3E%3C/svg%3E") 0 0/100% 100%,
+ radial-gradient(circle at 85% 95%,#a3101f55,#0000 30%)}
+.lcd{background:var(--lcdd);color:var(--lcd);border:2px inset #333;border-radius:6px;padding:12px;min-height:150px;text-shadow:0 0 6px var(--lcd);animation:lf 3s infinite}
+@keyframes lf{0%,94%,100%{opacity:1}95%{opacity:.5}97%{opacity:.85}}
+#cid{font-size:24px;min-height:32px;word-break:break-all}#st{font-size:13px;opacity:.8}#cap{margin-top:10px;font-size:15px;min-height:60px;color:#e8f0b0}
+.gl{animation:gl .35s infinite}
+@keyframes gl{0%{transform:translate(0)}25%{transform:translate(-3px,1px) skewX(6deg);color:#f55}50%{transform:translate(3px,-1px)}75%{transform:translate(-1px,2px) skewX(-6deg);color:#5ff}100%{transform:translate(0)}}
+.ring{animation:sh .13s infinite}
+@keyframes sh{0%{transform:translate(2px,1px) rotate(.4deg)}50%{transform:translate(-3px,-1px) rotate(-.5deg)}100%{transform:translate(1px,-2px) rotate(.3deg)}}
+.ring .lcd{box-shadow:0 0 30px var(--blood);background:#2a0c0c}
+.keys{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+.keys button{font-size:22px;padding:14px 0;background:#161214;border-color:#3b3235}
+#dl{font-size:32px;letter-spacing:10px;text-align:center;min-height:36px;color:var(--lcd)}
+.ans{display:none;gap:8px}.ans.on{display:flex}.ans button{flex:1;font-size:18px}
+.g{background:#143a1a;border-color:#2a8a3a}.x{background:#4a0e12}
+.board div{display:flex;justify-content:space-between;align-items:center;padding:7px 4px;border-bottom:1px solid #2b1a1c}
+.board button{padding:4px 8px;font-size:13px}
+#modal{position:fixed;inset:0;background:#000d;z-index:60;display:none;align-items:center;justify-content:center;padding:16px}
+#modal.on{display:flex}#mb{background:#120a0b;border:2px solid var(--blood);padding:16px;max-width:420px;width:100%;max-height:90vh;overflow:auto}
+.secret{border:1px dashed var(--blood);padding:14px;min-height:90px;margin:10px 0;filter:blur(12px);user-select:none;font-size:20px;text-align:center}.secret.v{filter:none}
+#toast{position:fixed;left:10px;right:10px;bottom:14px;z-index:70;background:#200509;border:2px solid var(--blood);padding:12px;display:none}
+.flash{animation:fs .5s}@keyframes fs{0%{background:#fff}100%{background:var(--bg)}}
+@media(prefers-reduced-motion:reduce){.ring,.gl{animation:none}}
+</style></head><body>
+
+<!-- 1. Warning + audio unlock -->
+<div id="warn" class="screen on">
+ <h1>DEAD LINE</h1>
+ <p style="text-align:center">a party game for people who answer unknown numbers</p>
+ <div class="warn"><b>WARNING:</b> loud sounds, sudden screams, flashing and jump scares. Not for anyone sensitive to these. Set the volume where everyone can stand it, and put the phone on a table in the middle of the room.</div>
+ <p class="sm" id="nosp" style="display:none;color:#e88">Speech synthesis is unavailable in this browser. You will get sound effects and on-screen captions instead of voices.</p>
+ <p class="sm" id="frm" style="display:none;color:#e88">You are inside a preview frame, which can block voices and the microphone. Download this file and open it directly in Chrome or Safari for the full experience.</p>
+ <button class="pri" id="start">PICK UP THE LINE (enables audio)</button>
+</div>
+
+<!-- 2. Setup -->
+<div id="setup" class="screen">
+ <h1>WHO'S HERE?</h1>
+ <div class="row"><input id="nm" maxlength="14" placeholder="Player name"><button id="add" style="flex:0 0 80px">Add</button></div>
+ <div class="plist" id="pl"></div>
+ <p class="sm">Need 3 to 10 players. Each gets a secret 3-digit number.</p>
+ <select id="mins"><option value="30">Night length: 30 min</option><option value="60" selected>Night length: 60 min</option><option value="120">Night length: 2 hours</option><option value="240">Night length: 4 hours</option></select>
+ <button class="pri" id="go">BEGIN THE NIGHT</button>
+</div>
+
+<!-- 3. Game -->
+<div id="game" class="screen">
+ <div class="phone" id="phone">
+  <div class="lcd"><div id="cid" class="gl">NO SIGNAL</div><div id="st">waiting...</div><div id="cap"></div></div>
+  <div class="ans" id="ans"><button class="g" id="yes">ANSWER</button><button class="x" id="no">IGNORE</button></div>
+  <div id="dl"></div>
+  <div class="keys" id="keys"></div>
+  <p class="sm" style="text-align:center">Finished your task? Dial your own number.</p>
+ </div>
+ <div class="row"><button id="caught">I caught someone!</button><button id="endn">End night</button></div>
+ <div class="row"><select id="vsel"></select><button id="vtest" style="flex:0 0 90px">Test voice</button></div>
+ <label class="sm" style="display:block;margin:6px 0"><input type="checkbox" id="mic" style="width:auto" checked> Let the caller hear you (talk when it asks a question)</label><div class="sm" id="micnote"></div><label hidden></label>
+ <div class="sm" id="vst"></div>
+ <button id="force" style="width:100%;opacity:.6;font-size:13px">Host: ring the phone now</button>
+ <h2>Scoreboard <span id="clock" style="font-size:13px;opacity:.7"></span></h2>
+ <div class="board" id="board"></div>
+</div>
+
+<!-- 4. Results -->
+<div id="results" class="screen"><h1>THE LINE GOES DEAD</h1><div class="board" id="final"></div><p id="verdict" style="text-align:center"></p><button class="pri" onclick="location.reload()">Play again</button></div>
+
+<div id="modal"><div id="mb"></div></div><div id="toast"></div>
+
+<script>
+"use strict";
+const $=s=>document.querySelector(s), esc=s=>s.replace(/[&<>"']/g,c=>"&#"+c.charCodeAt(0)+";");
+const rnd=a=>a[Math.floor(Math.random()*a.length)], wait=ms=>new Promise(r=>setTimeout(r,ms));
+let players=[], G=null, AC, master, noiseBuf, verb, dist, bed, ringTimer, glTimer, abortId=0, voiceName="";
+
+/* ================= AUDIO ENGINE (Web Audio, no files) ================= */
+function initAudio(){
+ AC=new (window.AudioContext||window.webkitAudioContext)();
+ const comp=AC.createDynamicsCompressor(); master=AC.createGain(); master.gain.value=.85;
+ master.connect(comp); comp.connect(AC.destination);
+ noiseBuf=AC.createBuffer(1,AC.sampleRate*2,AC.sampleRate);
+ const d=noiseBuf.getChannelData(0); for(let i=0;i<d.length;i++) d[i]=Math.random()*2-1;
+ // synthetic reverb impulse: decaying noise tail
+ const L=AC.sampleRate*2.4, ir=AC.createBuffer(2,L,AC.sampleRate);
+ for(let c=0;c<2;c++){const x=ir.getChannelData(c);for(let i=0;i<L;i++)x[i]=(Math.random()*2-1)*Math.pow(1-i/L,3)}
+ verb=AC.createConvolver(); verb.buffer=ir; const vg=AC.createGain(); vg.gain.value=.6; verb.connect(vg); vg.connect(master);
+ // distortion for the ringtone
+ dist=AC.createWaveShaper(); const cv=new Float32Array(256); for(let i=0;i<256;i++)cv[i]=Math.tanh((i/128-1)*7); dist.curve=cv; dist.connect(master);
+}
+function osc(type,f,t,dur,vol,dest,f2){const o=AC.createOscillator(),g=AC.createGain();o.type=type;o.frequency.setValueAtTime(f,t);
+ if(f2)o.frequency.exponentialRampToValueAtTime(f2,t+dur);
+ g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol,t+.02);g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+ o.connect(g);g.connect(dest||master);o.start(t);o.stop(t+dur+.05)}
+function noise(t,dur,vol,type,f,q,dest,swell){const s=AC.createBufferSource();s.buffer=noiseBuf;s.loop=true;
+ const fl=AC.createBiquadFilter();fl.type=type;fl.frequency.value=f;fl.Q.value=q||1;const g=AC.createGain();
+ g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(vol,t+(swell?dur/2:.01));g.gain.linearRampToValueAtTime(.0001,t+dur);
+ s.connect(fl);fl.connect(g);g.connect(dest||master);s.start(t,Math.random());s.stop(t+dur+.05)}
+const T=()=>AC.currentTime;
+const SFX={
+ static(d=1){noise(T(),d,.18,"highpass",2500)},
+ crackle(d=2){for(let i=0;i<d*9;i++)noise(T()+Math.random()*d,.03,.25,"bandpass",800+Math.random()*4500,2)},
+ heart(n=6){for(let i=0;i<n;i++){const t=T()+i*.85;osc("sine",58,t,.2,1,0,35);osc("sine",52,t+.22,.2,.7,0,30)}},
+ breath(n=2){for(let i=0;i<n;i++)noise(T()+i*2.2,1.9,.4,"bandpass",700,.8,0,1)},
+ whisper(){noise(T(),2,.3,"bandpass",3200,3,verb,1)},
+ bang(n=3){for(let i=0;i<n;i++){const t=T()+i*.33;osc("sine",95,t,.3,1,0,30);noise(t,.15,.5,"lowpass",600)}},
+ steps(n=6){for(let i=0;i<n;i++){const t=T()+i*.5;osc("sine",75,t,.12,.6,0,40);noise(t,.08,.2,"lowpass",450)}},
+ door(){this.bang(1);noise(T()+.05,.5,.4,"lowpass",900)},
+ scream(){const t=T();[0,.03,.07].forEach((o,i)=>osc("sawtooth",650+i*110,t+o,1.5,.3,verb,1700+i*250));noise(t,1.3,.3,"bandpass",2300,2,verb);SFX.flash()},
+ stinger(){const t=T();[220,233,311,330,466].forEach(f=>osc("sawtooth",f,t,1.3,.3,0,f/2));noise(t,.5,.9,"lowpass",3000);SFX.flash()},
+ flash(){document.body.classList.remove("flash");void document.body.offsetWidth;document.body.classList.add("flash");navigator.vibrate&&navigator.vibrate([80,40,120])},
+ dialtone(){const t=T();[350,440].forEach(f=>{const o=AC.createOscillator(),g=AC.createGain();o.frequency.value=f;g.gain.value=.12;o.connect(g);g.connect(master);o.start(t);o.stop(t+1.6)});noise(t+1.6,.1,.5,"lowpass",3000)}, // tone dies mid-breath
+ dtmf(k){const r=[697,770,852,941],c=[1209,1336,1477],i="123456789*0#".indexOf(k);if(i<0)return;const t=T();osc("sine",r[(i/3)|0],t,.12,.15);osc("sine",c[i%3],t,.12,.15)}
+};
+// uneasy ringtone: two detuned square waves drooping in pitch, distorted, slow and wobbly
+function ringBurst(){const t=T();[0,1.1].forEach(o=>{osc("square",470,t+o,.8,.2,dist,380);osc("square",497,t+o,.8,.2,dist,401)});noise(t,2,.05,"highpass",3000)}
+function startRing(){ringBurst();ringTimer=setInterval(ringBurst,3200)}
+function stopRing(){clearInterval(ringTimer)}
+// line bed: hiss + crackle that sits under the voice
+function startBed(){if(bed)return;const s=AC.createBufferSource();s.buffer=noiseBuf;s.loop=true;const f=AC.createBiquadFilter();f.type="bandpass";f.frequency.value=2200;
+ const g=AC.createGain();g.gain.value=.05;s.connect(f);f.connect(g);g.connect(master);s.start();bed={s,g,i:setInterval(()=>noise(T(),.03,.2,"bandpass",1500+Math.random()*3000,2),400)}}
+function stopBed(){if(!bed)return;bed.s.stop();clearInterval(bed.i);bed=null}
+
+/* ================= VOICES (speechSynthesis) ================= */
+const hasSpeech="speechSynthesis" in window;
+function fillVoices(){if(!hasSpeech)return;const vs=speechSynthesis.getVoices().filter(v=>/^en/i.test(v.lang));
+ const pref=vs.find(v=>/natural|neural|google uk english male|daniel|alex|aaron|google us/i.test(v.name))||vs[0];
+ $("#vsel").innerHTML=vs.map(v=>`<option>${esc(v.name)}</option>`).join("")||"<option>Default voice</option>";
+ voiceName=voiceName||(pref&&pref.name)||"";$("#vsel").value=voiceName}
+if(window.self!==window.top)$("#frm").style.display="block";
+if(hasSpeech){speechSynthesis.onvoiceschanged=fillVoices}else $("#nosp").style.display="block";
+$("#vsel").onchange=e=>voiceName=e.target.value;
+let vwarned=false;
+function vstat(ok){$("#vst").textContent=ok?"Voice: working":"Voice blocked. Raise media volume, turn off silent mode, pick another voice, and open this file directly in your browser (not a chat preview).";
+ if(!ok&&!vwarned){vwarned=true;toast("The caller's voice is blocked on this device. See the note under the voice menu.")}}
+function say(seg,id){ // seg: [text,pitch,rate,pauseAfter,sfx]
+ return new Promise(res=>{
+  const [t,p,r,w,fx]=seg; let done=false,started=false,retried=false;
+  const fin=()=>{if(done)return;done=true;setTimeout(res,w||300)};
+  if(fx&&SFX[fx])SFX[fx]();
+  if(!hasSpeech){setTimeout(fin,t.length*70);return}
+  // if the chosen voice fails or never starts, retry once with the plain default voice
+  const retry=()=>{if(done)return;if(retried){vstat(false);return fin()}retried=true;speechSynthesis.cancel();setTimeout(()=>speak(true),150)};
+  const speak=plain=>{const u=new SpeechSynthesisUtterance(t);u.lang="en-US";u.volume=1;
+   if(!plain){u.pitch=Math.min(2,Math.max(.1,p));u.rate=Math.min(1.6,Math.max(.5,r));
+    const v=speechSynthesis.getVoices().find(v=>v.name===voiceName);if(v)u.voice=v}
+   u.onstart=()=>{started=true;vstat(true)};
+   u.onend=()=>{started?fin():retry()};
+   u.onerror=e=>(e.error==="interrupted"||e.error==="canceled")?fin():retry();
+   speechSynthesis.resume();speechSynthesis.speak(u)};
+  speak(false);
+  setTimeout(()=>{if(!started)retry()},2500);setTimeout(fin,t.length*140+7000)})}
+async function runScript(segs,name,id){
+ for(const s of segs){if(id!==abortId)return false;const seg=[s[0].replace(/\{n\}/g,name),...s.slice(1)];
+  caption(seg[0]);await say(seg,id);
+  if(seg[4]==="ask"){$("#st").textContent="🎤 YOUR TURN. TALK.";osc("sine",880,T(),.15,.25);const h=await listen(6000);$("#st").textContent="CONNECTED ▮▮▮";if(id!==abortId)return false;
+   const rr=[react(h,name),seg[1],seg[2],500];caption(rr[0]);await say(rr,id)}}
+ return id===abortId}
+const ASKS={
+ killer:[["Tell me, {n}... are you alone?",.3,.65,0,"ask"],["Say my name. You know it. Say it.",.25,.6,0,"ask"]],
+ girl:[["Please, say something! Tell me you can hear me!",1.5,1.2,0,"ask"],["Are you safe? {n}, are you somewhere safe?",1.5,1.2,0,"ask"]],
+ child:[["What's your favorite thing about the dark?",1.9,.8,0,"ask"],["Will you promise not to tell? Promise out loud.",1.9,.8,0,"ask"]],
+ possessed:[["Speak, {n}. Let us hear your voice.",.05,.5,0,"ask"],["Tell us what you are afraid of.",.05,.45,0,"ask"]],
+ stalker:[["What are you smiling at, {n}? Tell me.",.55,.8,0,"ask"],["Whisper where you are standing right now.",.5,.75,0,"ask"]]};
+// microphone: one permission prompt at the start, kept open all night (an analyser measures how you talk)
+let micAn=null;
+async function warmMic(){try{const st=await navigator.mediaDevices.getUserMedia({audio:true});
+ const src=AC.createMediaStreamSource(st);micAn=AC.createAnalyser();micAn.fftSize=512;src.connect(micAn)}
+ catch(e){$("#mic").checked=false;$("#mic").disabled=true;$("#micnote").textContent="Mic unavailable, so the caller can't hear you. Open the file directly in Chrome or Safari and allow the mic."}}
+function level(ms){return new Promise(res=>{let pk=0;const b=new Uint8Array(micAn.fftSize);
+ const iv=setInterval(()=>{micAn.getByteTimeDomainData(b);for(const v of b)pk=Math.max(pk,Math.abs(v-128))},50);setTimeout(()=>{clearInterval(iv);res(pk)},ms)})}
+// listen for the player's reply: words (where the browser can transcribe them) plus how loud they were
+async function listen(ms){
+ if(!$("#mic").checked||!micAn){await wait(ms);return{t:"",lv:-1}}
+ const SR=window.SpeechRecognition||window.webkitSpeechRecognition;let t="",r=null;
+ if(SR){try{r=new SR();r.lang="en-US";r.interimResults=true;r.onerror=()=>{};
+  r.onresult=e=>{t=[...e.results].map(x=>x[0].transcript).join(" ");$("#cap").textContent="you: "+t};r.start()}catch(e){r=null}}
+ const lv=await level(ms);
+ if(r){try{r.stop()}catch(e){}await wait(900)}
+ return{t:t.trim(),lv}}
+// the caller answers based on what it heard
+function react(h,name){const {t,lv}=h;
+ if(t){const k=[[/help|stop|please|\bno\b/i,"Nobody is coming, "+name+"."],[/who|why|what/i,"You already know who I am."],[/hello|\bhi\b|hey/i,"There you are. I've been waiting."],[/scared|afraid|not/i,"Your voice says otherwise."]].find(x=>x[0].test(t));
+  return k?k[1]:"You said, "+t+". I heard you, "+name+". I always hear you."}
+ if(lv>=40)return "Don't shout. They'll hear you too.";
+ if(lv>=8)return "I can hear you breathing, "+name+". Whisper. I like it when you whisper.";
+ return "...Silence. I like silence. It means you're listening."}
+function caption(t){const c=$("#cap");c.textContent=t;c.classList.remove("gl");void c.offsetWidth;c.classList.add("gl");setTimeout(()=>c.classList.remove("gl"),600)}
+
+/* ================= SCRIPTS: [text, pitch, rate, pause ms, sfx] ================= */
+const SCRIPTS={
+ killer:[
+  [["Hello, {n}.",.3,.7,900],["Please... don't hang up. I'd hate to have to come closer.",.3,.65,800,"breath"],["You keep looking at the door.",.25,.7,1000],["Everyone in that room thinks they're safe.",.3,.65,500]],
+  [["{n}. Shh.",.2,.6,1200],["I'm so close I can hear the floor creak under you.",.3,.65,700,"steps"],["Don't turn around. Not yet.",.2,.6,600]],
+  [["Nice room, {n}.",.35,.75,900],["I was here before the party started. I'll be here after.",.3,.65,900,"door"],["Smile. You're being watched.",.3,.7,500]]],
+ girl:[
+  [["{n}? Oh god... {n}, please, listen...",1.5,1.3,200,"steps"],["He's in the house. I'm in the closet. I can hear him breathing.",1.4,1.2,300,"breath"],["Oh no, he's...",1.6,1.4,100,"door"]],
+  [["Don't say my name. Just listen. Please.",1.4,1,600,"steps"],["I ran. I ran so far. The door won't open! It won't open!",1.5,1.4,300,"bang"],["Is he behind you? Is he behind you, {n}?",1.6,1.3,200]],
+  [["Hello? Hello? Is anyone... {n}? It's you. Thank god.",1.5,1.15,500,"static"],["Something is following me. It's wearing a smile.",1.4,1.1,400,"steps"],["It heard me. Oh no, it heard me.",1.6,1.4,100,"door"]]],
+ child:[
+  [["Hi {n}. Do you want to play with me?",1.9,.85,900],["I'm in the wall. Mommy says I can't come out.",1.9,.8,900,"whisper"],["It's so dark in here. Can you count to ten?",1.9,.8,600]],
+  [["{n}... {n}... why is it so cold in your room?",1.8,.75,900,"whisper"],["I'm under the table. It's okay. I'm not scared anymore.",1.9,.8,800]],
+  [["I know a secret about you, {n}. La la la.",1.9,.9,800],["They never found me. Do you want to see?",1.8,.8,500,"crackle"]]],
+ possessed:[
+  [["{n}.",.05,.5,1100,"static"],["We are here. We have always been here.",.1,.55,800,"whisper"],["{n}. {n}. {n}.",.05,.45,300,"heart"]],
+  [["Do not... hang... up.",.05,.4,1000,"crackle"],["Your name tastes like smoke, {n}.",.08,.5,900],["We are in the phone now.",.05,.5,400,"stinger"]],
+  [["Listen to the dead air, {n}.",.1,.5,1500,"static"],["Someone beside you is not breathing.",.05,.5,700,"heart"]]],
+ stalker:[
+  [["Hi {n}. You're holding the phone in your left hand. No... now the right.",.6,.85,900],["You keep glancing at the person next to you.",.5,.8,800],["I like what you're wearing. It will be easy to find.",.5,.8,500,"breath"]],
+  [["Don't look at the window, {n}.",.6,.85,1000,"steps"],["Too late. I saw you look.",.5,.8,700],["I'll be watching until the end of the night.",.5,.8,500]],
+  [["You laughed a minute ago. I loved that.",.55,.8,900],["You tucked your hair, scratched your arm. I'm taking notes, {n}.",.5,.8,700],["Keep doing exactly that.",.5,.75,400,"crackle"]]]
+};
+const KINDS=Object.keys(SCRIPTS);
+const REAL_OUT=[["I have a job for you, {n}. Check the screen. Tell no one.",.4,.7,500,"static"]];
+const FAKE_OUT=[[["Behind you.",.2,.7,50,"stinger"]],[["Run.",.5,1,10,"scream"]],[["Did you hear that?",.3,.7,50,"bang"]],[["Found you.",.1,.6,50,"scream"]]];
+const CIDS=["UNKNOWN","NO CARRIER","H3 KN0WS","???-????","YOUR OWN NUMBER","MOM (DECEASED)","000-000-0000","DON'T","BEHIND U","L1STEN"];
+
+/* ================= TASKS ================= */
+const TASKS=["Get three different people to glance over their shoulder, without telling them why.",
+"Whisper \"did you hear that?\" to someone until they go and check a door or window.",
+"Say \"it just got really cold\" and get two people to agree.",
+"Move a small object (cup, remote) three times when nobody is looking. See if anyone notices.",
+"Hum a slow lullaby until someone asks what it is.",
+"Stand in a doorway staring at nothing for ten seconds until someone asks what's wrong.",
+"Make someone touch the back of their neck.",
+"Ask a player with a straight face: \"Did you feel someone breathe on you?\"",
+"Tap three times on a table in a quiet moment until someone reacts.",
+"Wave at an empty corner of the room, smile, and say nothing until somebody asks.",
+"Get someone to switch a light on or off for you without asking directly.",
+"Ask \"Who is Margaret?\" and refuse to explain.",
+"Hold eye contact with one player and smile for five full seconds.",
+"Whisper a player's name from across the room, then deny you said anything.",
+"Get a player to move to a different seat.",
+"Tell a one-sentence creepy story and get someone to say \"that's creepy\"."];
+const TRAPS=["It was never a real call, {n}. The voice only wanted to watch you obey. -15 points.",
+"Something answered the phone for you, {n}. It said you were a very good liar. -15 points.",
+"There was no task. The line was only hungry for your trust, {n}. -15 points."];
+
+/* ================= SETUP ================= */
+function show(id){document.querySelectorAll(".screen").forEach(s=>s.classList.toggle("on",s.id===id))}
+function modal(html){$("#mb").innerHTML=html;$("#modal").classList.add("on")}
+function closeModal(){$("#modal").classList.remove("on")}
+let tt;function toast(m){const t=$("#toast");t.innerHTML=m;t.style.display="block";clearTimeout(tt);tt=setTimeout(()=>t.style.display="none",6000)}
+$("#start").onclick=()=>{initAudio();AC.resume();fillVoices();if(hasSpeech){const u=new SpeechSynthesisUtterance(" ");u.volume=0;speechSynthesis.speak(u)}warmMic();SFX.static(.6);setTimeout(()=>{SFX.heart(2)},300);show("setup")};
+function addPlayer(){const v=$("#nm").value.trim();if(!v||players.length>=10||players.some(p=>p.name.toLowerCase()===v.toLowerCase()))return;
+ players.push({name:v,num:"",score:0,task:null});$("#nm").value="";renderSetup()}
+$("#add").onclick=addPlayer;$("#nm").onkeydown=e=>{if(e.key==="Enter")addPlayer()};
+function renderSetup(){$("#pl").innerHTML=players.map((p,i)=>`<div>${esc(p.name)}<button onclick="players.splice(${i},1);renderSetup()">remove</button></div>`).join("")}
+$("#go").onclick=()=>{if(players.length<3)return toast("At least 3 players are needed.");
+ const used=new Set();players.forEach(p=>{let n;do{n=String(100+Math.floor(Math.random()*900))}while(used.has(n));used.add(n);p.num=n});
+ numberRound(0)};
+// pass the phone around so each player learns their own number privately
+function numberRound(i){if(i>=players.length){beginNight();return}
+ modal(`<h2>Pass the phone to ${esc(players[i].name)}</h2><button class="pri" id="nx">I'm ${esc(players[i].name)}</button>`);
+ $("#nx").onclick=()=>secret("Your number",players[i].num,()=>numberRound(i+1))}
+// hold-to-reveal overlay so a task or number isn't visible to the room
+function secret(title,txt,done){
+ modal(`<h2>${title}</h2><p class="sm">Everyone else look away. Memorize it.</p><div id="sec" class="secret">${txt}</div><button class="pri" id="hold">HOLD TO REVEAL</button><button id="ok" style="width:100%">Done</button>`);
+ const s=$("#sec"),h=$("#hold"),on=e=>{e.preventDefault();s.classList.add("v")},off=()=>s.classList.remove("v");
+ h.onpointerdown=on;h.onpointerup=h.onpointerleave=h.onpointercancel=off;$("#ok").onclick=()=>{closeModal();done&&done()}}
+
+/* ================= GAME ================= */
+function beginNight(){closeModal();const m=+$("#mins").value;G={end:Date.now()+m*60000,span:m*60000,call:null};
+ show("game");buildKeys();renderBoard();$("#cid").textContent="STANDBY";
+ schedule(12000+Math.random()*18000);G.clock=setInterval(tick,1000)}
+function tick(){const l=G.end-Date.now();if(l<=0){endNight();return}$("#clock").textContent="("+Math.ceil(l/60000)+" min left)"}
+function schedule(ms){clearTimeout(G.nt);G.nt=setTimeout(incoming,ms)}
+function nextGap(){const base=Math.min(110,Math.max(40,G.span/60000*1.2));return (base*.5+Math.random()*base)*1000} // randomized, scaled to night length
+function incoming(){if(G.call)return schedule(8000);
+ const free=players.filter(p=>!p.task),k=Math.random();let type=k<.5?"real":k<.78?"fake":"trap";if(!free.length)type="fake";
+ G.call={type,kind:rnd(KINDS),ringing:true};
+ $("#phone").classList.add("ring");$("#ans").classList.add("on");$("#st").textContent="INCOMING CALL";
+ glTimer=setInterval(()=>{$("#cid").textContent=rnd(CIDS)},160);startRing();SFX.crackle(1);
+ G.miss=setTimeout(()=>{if(G.call&&G.call.ringing){endRing();$("#st").textContent="1 missed call";caption("...");SFX.whisper();G.call=null;schedule(nextGap())}},28000)}
+function endRing(){stopRing();clearInterval(glTimer);clearTimeout(G&&G.miss);$("#phone").classList.remove("ring");$("#ans").classList.remove("on")}
+$("#no").onclick=()=>{if(!G.call||!G.call.ringing)return;endRing();$("#cid").textContent="STANDBY";$("#st").textContent="you hung up. it called you first.";SFX.whisper();G.call=null;schedule(nextGap())};
+$("#yes").onclick=()=>{if(!G.call||!G.call.ringing)return;endRing();G.call.ringing=false;
+ const t=G.call.type,pool=t==="fake"?players:players.filter(p=>!p.task);
+ modal(`<h2>Who is answering?</h2>`+pool.map(p=>`<button style="width:100%;margin:4px 0" data-n="${esc(p.name)}">${esc(p.name)}</button>`).join(""));
+ document.querySelectorAll("#mb [data-n]").forEach(b=>b.onclick=()=>{closeModal();playCall(players.find(p=>p.name===b.dataset.n))})};
+async function playCall(p){const c=G.call,id=++abortId;c.p=p;$("#cid").textContent=p.name.toUpperCase()+"?";$("#st").textContent="CONNECTED  "+"▮".repeat(3);
+ startBed();SFX.static(1.2);
+ // trap calls sound identical to real ones: that's the point
+ let segs=[...rnd(SCRIPTS[c.kind])];
+ segs.push(rnd(ASKS[c.kind]));segs=segs.concat(c.type==="fake"?rnd(FAKE_OUT):REAL_OUT);
+ const ok=await runScript(segs,p.name,id);if(!ok)return;
+ stopBed();SFX.dialtone();$("#st").textContent="call ended";await wait(2000);$("#cap").textContent="";$("#cid").textContent="STANDBY";
+ G.call=null;schedule(nextGap());
+ if(c.type!=="fake"){p.task={txt:rnd(TASKS),pts:10+5*Math.floor(Math.random()*4),trap:c.type==="trap"};renderBoard();
+  secret("Your task for "+esc(p.name),esc(p.task.txt)+`<br><small>(${p.task.pts} pts, don't get caught)</small>`)}}
+$("#force").onclick=()=>{if(!G.call)incoming()};
+
+/* ---- keypad & scoring ---- */
+let dialed="";
+function buildKeys(){if($("#keys").children.length)return;"123456789*0#".split("").forEach(k=>{const b=document.createElement("button");b.textContent=k;b.onclick=()=>press(k);$("#keys").appendChild(b)})}
+function press(k){if(!AC||(G.call&&!G.call.p===false&&G.call.ringing))return;SFX.dtmf(k);if(!/\d/.test(k))return;dialed+=k;$("#dl").textContent=dialed;if(dialed.length===3)setTimeout(submitDial,350)}
+function submitDial(){const n=dialed;dialed="";$("#dl").textContent="";if(G.call&&G.call.p)return;
+ const p=players.find(x=>x.num===n);
+ if(!p){SFX.static(1.2);caption("wrong number...");return say(["Wrong number. Or is it.",.1,.5,100,"whisper"])}
+ if(!p.task){SFX.crackle(1);toast("Nobody is waiting on that number. The line is quiet... too quiet.");return}
+ if(p.task.trap){p.score-=15;toast(esc(rnd(TRAPS).replace("{n}",p.name)));SFX.stinger();say(["Gotcha.",.1,.6,0]);
+ }else{p.score+=p.task.pts;toast(`${esc(p.name)} completed the task unseen. +${p.task.pts} points.`);SFX.heart(3)}
+ p.task=null;renderBoard()}
+$("#caught").onclick=()=>{const opts=players.map(p=>`<option>${esc(p.name)}</option>`).join("");
+ modal(`<h2>Caught someone?</h2><p class="sm">Who is accusing, and who was caught doing their task?</p><select id="c1">${opts}</select><select id="c2" style="margin-top:8px">${opts}</select><button class="pri" id="cok">Accuse</button><button id="ccl" style="width:100%">Cancel</button>`);
+ $("#ccl").onclick=closeModal;$("#cok").onclick=()=>{const a=players.find(p=>p.name===$("#c1").value),b=players.find(p=>p.name===$("#c2").value);closeModal();if(a===b)return toast("You can't accuse yourself.");
+  if(b.task){b.score-=10;a.score+=8;b.task=null;toast(`${esc(b.name)} was caught! ${esc(a.name)} +8, ${esc(b.name)} -10 and the task is lost.`);SFX.scream()}
+  else{a.score-=5;toast(`${esc(b.name)} had no task. False accusation: ${esc(a.name)} -5.`);SFX.bang(2)}
+  renderBoard()}};
+$("#vtest").onclick=()=>{AC&&AC.resume();say(["Can you hear me? I can hear you.",.3,.7,0],0)};
+function renderBoard(){$("#board").innerHTML=[...players].sort((a,b)=>b.score-a.score).map(p=>`<div><span>${p.task?"📞 ":""}${esc(p.name)}</span><span>${p.score} pts ${p.task?`<button data-t="${esc(p.name)}">task</button>`:""}</span></div>`).join("");
+ document.querySelectorAll("#board [data-t]").forEach(b=>b.onclick=()=>{const p=players.find(x=>x.name===b.dataset.t);
+  modal(`<h2>Are you ${esc(p.name)}?</h2><button class="pri" id="yy">Yes, show my task</button><button id="nn" style="width:100%">No</button>`);
+  $("#nn").onclick=closeModal;$("#yy").onclick=()=>secret("Your task",esc(p.task.txt))})}
+$("#endn").onclick=()=>{if(confirm("End the night now?"))endNight()};
+function endNight(){if(!G||G.over)return;G.over=true;clearInterval(G.clock);clearTimeout(G.nt);endRing();stopBed();abortId++;hasSpeech&&speechSynthesis.cancel();
+ const r=[...players].sort((a,b)=>b.score-a.score);$("#final").innerHTML=r.map((p,i)=>`<div><span>${i+1}. ${esc(p.name)}</span><span>${p.score} pts</span></div>`).join("");
+ $("#verdict").textContent=r[0].name+" survived the night best. The rest of you are still on the line.";show("results");SFX.dialtone();setTimeout(()=>SFX.stinger(),2200)}
+</script></body></html>
